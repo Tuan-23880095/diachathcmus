@@ -1,0 +1,354 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Kiểm Tra Tư Vấn Tuyển Sinh - Khoa Địa Chất</title>
+    <!-- React & Babel -->
+    <script src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
+    <script src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
+    <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Lucide Icons -->
+    <script src="https://unpkg.com/lucide@latest"></script>
+    <!-- Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Patrick+Hand&family=Roboto:wght@300;400;500;700&display=swap" rel="stylesheet">
+
+    <style>
+        body { font-family: 'Roboto', sans-serif; background-color: #fff7ed; /* Màu kem/đất */ }
+        .hand-font { font-family: 'Patrick Hand', cursive; }
+        
+        /* Custom Scrollbar */
+        ::-webkit-scrollbar { width: 8px; }
+        ::-webkit-scrollbar-track { background: #f1f1f1; }
+        ::-webkit-scrollbar-thumb { background: #d97706; border-radius: 4px; } /* Màu cam đất */
+        ::-webkit-scrollbar-thumb:hover { background: #b45309; }
+
+        /* Animation */
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        .animate-fade-in { animation: fadeIn 0.4s ease-out forwards; }
+    </style>
+</head>
+<body>
+    <div id="root"></div>
+
+    <script type="text/babel">
+        const { useState, useEffect, useRef } = React;
+
+        // --- CẤU HÌNH ---
+        // !!! QUAN TRỌNG: THAY URL WEB APP CỦA BẠN VÀO DÒNG DƯỚI !!!
+        const APPS_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbxBPRlkjpMLDctdm2Uk7aYex_P6Cx0uhIdUmwOcYEm9C7JDe5OH92FiWEn6Nz1HNenY-A/exec"; 
+
+        // --- DỮ LIỆU ĐỀ THI (20 CÂU ĐỊA CHẤT) ---
+        const rawExamData = {
+            mcq: [
+                { q: "1. Trường ĐH KHTN áp dụng chính sách nào đối với Điểm ĐGNL và Điểm tốt nghiệp THPT?", options: ["Chỉ sử dụng Điểm tốt nghiệp THPT", "Áp dụng hoặc là Điểm ĐGNL hoặc Điểm tốt nghiệp THPT", "Cộng dồn hai loại điểm", "Chỉ sử dụng Điểm ĐGNL"], ans: 1 },
+                { q: "2. Mục tiêu chính của việc áp dụng linh hoạt giữa Điểm ĐGNL hoặc Điểm tốt nghiệp THPT là gì?", options: ["Tăng doanh thu", "Đảm bảo quyền lợi thí sinh", "Giảm hồ sơ ảo", "Loại bớt thí sinh tự do"], ans: 1 },
+                { q: "3. Cụm từ 'ĐGNL' là viết tắt của kỳ thi nào?", options: ["Đánh giá Năng lực", "Đánh giá Ngữ liệu", "Định giá Năng lượng", "Đo lường Nguyên lý"], ans: 0 },
+                { q: "4. Đặc thù nghề nghiệp quan trọng nhất cần chia sẻ với thí sinh ngành Địa chất?", options: ["Chỉ làm việc phòng máy lạnh", "Kết hợp nghiên cứu phòng thí nghiệm và thực địa", "Chỉ dành cho nam giới", "Không cần kiến thức KHTN"], ans: 1 },
+                { q: "5. Trả lời sao khi phụ huynh hỏi 'Ngành Địa chất ra trường chỉ đi đập đá phải không'?", options: ["Vâng đúng rồi, vất vả lắm", "Ngành đa dạng: dầu khí, địa kỹ thuật, môi trường...", "Phụ huynh không nên lo", "Chỉ dành cho người thích đá quý"], ans: 1 },
+                { q: "6. Lĩnh vực nào sau đây KHÔNG phải là hướng đi phổ biến của ngành Địa chất?", options: ["Dầu khí khoáng sản", "Địa kỹ thuật xây dựng", "Phẫu thuật thẩm mỹ", "Quản lý tài nguyên môi trường"], ans: 2 },
+                { q: "7. Khuyên thí sinh đăng ký nguyện vọng như thế nào để đảm bảo quyền lợi?", options: ["Chỉ đăng ký 1 nguyện vọng", "Tận dụng đa dạng phương thức (ĐGNL, THPT...)", "Đăng ký đại không cần điểm", "Chỉ chọn ngành điểm thấp"], ans: 1 },
+                { q: "8. Từ khóa 'Tập trung' trong báo cáo ám chỉ điều gì?", options: ["Tập trung xem tivi", "Tập trung nguồn lực vào mũi nhọn tuyển sinh", "Tập trung đi du lịch", "Đóng cửa văn phòng"], ans: 1 },
+                { q: "9. Thí sinh sức khỏe yếu, say xe có học Địa chất được không?", options: ["Không sao đâu cứ học đi", "Cần cân nhắc kỹ, nhưng vẫn có hướng làm Lab/Văn phòng", "Tuyệt đối không", "Chuyển sang Toán tin"], ans: 1 },
+                { q: "10. Điểm mạnh thường được nhấn mạnh của Khoa Địa chất ĐH KHTN?", options: ["Cơ sở duy nhất miền Nam có bề dày lịch sử uy tín", "Học phí cao nhất", "Không cần Tiếng Anh", "Chỉ dạy lý thuyết"], ans: 0 },
+                { q: "11. Các khối thi (tổ hợp) phổ biến nhất vào ngành Địa chất?", options: ["C00 và D01", "A00 và B00", "H00 và V00", "Chỉ xét IELTS"], ans: 1 },
+                { q: "12. Kỹ năng quan trọng nhất đối với tư vấn viên tuyển sinh?", options: ["Nói liên tục", "Lắng nghe tích cực và đặt câu hỏi", "Ép buộc nộp hồ sơ", "Chê bai trường khác"], ans: 1 },
+                { q: "13. Xử lý thế nào khi không chắc chắn câu trả lời về quy chế?", options: ["Đoán đại", "Xin lỗi, ghi nhận và phản hồi sau", "Lờ đi", "Nói câu hỏi không quan trọng"], ans: 1 },
+                { q: "14. Chuyên ngành 'Địa chất Thủy văn - Địa chất Công trình' giải quyết vấn đề gì?", options: ["Khoa học hành tinh", "Tìm nước ngầm và xử lý nền móng", "Lai tạo cây trồng", "Thiết kế phần mềm"], ans: 1 },
+                { q: "15. Xem thông tin 'Đề án tuyển sinh' chính xác nhất ở đâu?", options: ["Facebook không chính thức", "Website trường và Cổng Bộ GD&ĐT", "Hỏi bạn bè", "Tự suy luận"], ans: 1 },
+                { q: "16. 'Ngành học Khoa học Trái đất' bao trùm lĩnh vực nào?", options: ["Chỉ Địa chất học", "Địa chất, Khí tượng, Hải dương...", "Địa lý kinh tế", "Lịch sử loài người"], ans: 1 },
+                { q: "17. Học Địa chất có cơ hội đi nước ngoài không?", options: ["Không bao giờ", "Rất nhiều: học bổng, hội thảo, tập đoàn đa quốc gia", "Chỉ đi khi bỏ nghề", "Chỉ đi du lịch tự túc"], ans: 1 },
+                { q: "18. Tại sao cần 'cập nhật thông tin liên tục'?", options: ["Để nói chuyện phiếm", "Quy chế và mốc thời gian thay đổi ảnh hưởng quyền lợi", "Để thể hiện hiểu biết", "Dùng thông tin năm ngoái là đủ"], ans: 1 },
+                { q: "19. Hình ảnh 'búa địa chất' tượng trưng cho điều gì?", options: ["Phá hoại môi trường", "Tinh thần khảo sát thực địa và nghiên cứu", "Nghề thợ xây", "Thể dục thể thao"], ans: 1 },
+                { q: "20. Điều quan trọng nhất cần đạt được sau buổi tư vấn?", options: ["Ký cam kết nhập học", "Giúp thí sinh có đủ thông tin để tự quyết định", "Xin số điện thoại", "Chứng minh ngành mình số 1"], ans: 1 }
+            ]
+        };
+
+        const quizQuestions = rawExamData.mcq.map((item, i) => ({ 
+            ...item, 
+            id: `mcq_${i}`, 
+            type: 'mcq', 
+            section: 'Kiến Thức Tuyển Sinh' 
+        }));
+
+        // --- COMPONENTS ---
+        const Icon = ({ name, className }) => {
+            const ref = useRef(null);
+            useEffect(() => {
+                if (typeof lucide !== 'undefined' && ref.current) {
+                    ref.current.innerHTML = '';
+                    const i = document.createElement('i');
+                    i.setAttribute('data-lucide', name);
+                    if (className) i.className = className;
+                    ref.current.appendChild(i);
+                    lucide.createIcons({ root: ref.current });
+                }
+            }, [name, className]);
+            return <span ref={ref} style={{ display: 'inline-flex', verticalAlign: 'middle' }}></span>;
+        };
+
+        const StartScreen = ({ onStart }) => {
+            const [name, setName] = useState("");
+            
+            return (
+                <div className="flex flex-col items-center justify-center min-h-[90vh] px-4 animate-fade-in bg-orange-50">
+                    <div className="bg-white p-8 rounded-2xl shadow-2xl max-w-lg w-full text-center border-t-8 border-orange-600">
+                        <div className="bg-orange-100 w-24 h-24 rounded-full flex items-center justify-center mx-auto mb-6">
+                            <Icon name="mountain" className="w-12 h-12 text-orange-600" />
+                        </div>
+                        <h1 className="text-3xl font-bold text-gray-800 mb-2 hand-font uppercase">Tập Huấn Tuyển Sinh</h1>
+                        <p className="text-orange-700 font-medium mb-8">Khoa Địa Chất - Trường ĐH KHTN</p>
+                        
+                        <div className="space-y-4 text-left">
+                            <div>
+                                <label className="block text-sm font-bold text-gray-700 mb-1">Họ và tên Giảng viên / Cán bộ</label>
+                                <input type="text" value={name} onChange={e => setName(e.target.value)} className="w-full p-4 border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-500 focus:outline-none text-lg" placeholder="Nhập họ tên của Thầy/Cô..." />
+                            </div>
+                        </div>
+
+                        <button onClick={() => name ? onStart(name) : alert("Vui lòng nhập họ tên!")} 
+                            className="mt-8 w-full py-4 bg-orange-600 text-white font-bold rounded-xl shadow-lg hover:bg-orange-700 transition transform hover:scale-105 flex items-center justify-center gap-2 text-lg">
+                            Bắt đầu làm bài <Icon name="arrow-right" className="w-6 h-6" />
+                        </button>
+                    </div>
+                </div>
+            );
+        };
+
+        const MCQQuestion = ({ data, answer, onAnswer }) => (
+            <div className="animate-fade-in">
+                <h3 className="text-xl font-medium text-gray-800 mb-6 leading-relaxed">{data.q}</h3>
+                <div className="grid grid-cols-1 gap-3">
+                    {data.options.map((opt, i) => (
+                        <button key={i} onClick={() => onAnswer(i)}
+                            className={`p-4 rounded-xl border-2 text-left transition flex items-center gap-3 relative
+                            ${answer === i ? 'border-orange-500 bg-orange-50 ring-1 ring-orange-300' : 'border-gray-200 hover:border-orange-300 hover:bg-white'}`}>
+                            <div className={`w-8 h-8 rounded-full flex items-center justify-center border font-bold shrink-0
+                                ${answer === i ? 'bg-orange-500 text-white border-orange-500' : 'text-gray-500 border-gray-300 bg-white'}`}>
+                                {String.fromCharCode(65 + i)}
+                            </div>
+                            <span className="text-gray-700 font-medium">{opt}</span>
+                            {answer === i && <Icon name="check-circle" className="absolute right-4 text-orange-500 w-6 h-6" />}
+                        </button>
+                    ))}
+                </div>
+            </div>
+        );
+
+        const QuizScreen = ({ onFinish }) => {
+            const [currentIdx, setCurrentIdx] = useState(0);
+            const [answers, setAnswers] = useState({});
+            const currentQ = quizQuestions[currentIdx];
+            const isLast = currentIdx === quizQuestions.length - 1;
+            const progress = ((currentIdx + 1) / quizQuestions.length) * 100;
+
+            const handleAnswer = (ans) => {
+                setAnswers(prev => ({ ...prev, [currentQ.id]: ans }));
+            };
+
+            const isAnswered = answers[currentQ.id] !== undefined;
+
+            return (
+                <div className="max-w-3xl mx-auto mt-6 px-4 pb-20">
+                    <div className="bg-white p-4 rounded-xl shadow-sm mb-6 flex justify-between items-center sticky top-2 z-20 border-b border-gray-100">
+                        <div>
+                            <span className="text-xs font-bold text-gray-400 uppercase">Câu hỏi</span>
+                            <div className="text-2xl font-bold text-orange-600 leading-none">
+                                {currentIdx + 1}<span className="text-lg text-gray-300">/{quizQuestions.length}</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div className="w-full bg-gray-200 rounded-full h-2 mb-6">
+                        <div className="bg-orange-500 h-2 rounded-full transition-all duration-300" style={{ width: `${progress}%` }}></div>
+                    </div>
+
+                    <div className="bg-white rounded-2xl shadow-lg p-6 md:p-8 min-h-[400px] flex flex-col justify-between border-t-4 border-orange-500">
+                        <MCQQuestion data={currentQ} answer={answers[currentQ.id]} onAnswer={handleAnswer} />
+
+                        <div className="flex justify-between mt-8 pt-6 border-t border-gray-50">
+                            <button onClick={() => setCurrentIdx(c => Math.max(0, c - 1))} disabled={currentIdx === 0}
+                                className={`flex items-center gap-2 px-5 py-2.5 rounded-lg font-medium transition ${currentIdx===0 ? 'text-gray-300 cursor-not-allowed' : 'text-gray-600 hover:bg-gray-100'}`}>
+                                <Icon name="arrow-left" className="w-5 h-5" /> Quay lại
+                            </button>
+                            
+                            <button onClick={() => isLast ? onFinish(answers) : setCurrentIdx(c => Math.min(quizQuestions.length - 1, c + 1))}
+                                disabled={!isAnswered}
+                                className={`flex items-center gap-2 px-8 py-3 rounded-xl font-bold text-white shadow-lg transition transform active:scale-95 
+                                ${!isAnswered ? 'bg-gray-300 cursor-not-allowed' : isLast ? 'bg-red-600 hover:bg-red-700' : 'bg-orange-600 hover:bg-orange-700'}`}>
+                                {isLast ? 'Nộp Bài' : 'Tiếp Theo'} {!isLast && <Icon name="arrow-right" className="w-5 h-5" />}
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            );
+        };
+
+        const ResultScreen = ({ result, aiComment, onRetry }) => {
+            if (!result) return null;
+            const { total, max, details } = result;
+            const isPerfect = total === 100;
+
+            return (
+                <div className="max-w-2xl mx-auto mt-10 px-4 pb-20 animate-fade-in">
+                    <div className="bg-white rounded-2xl shadow-2xl overflow-hidden">
+                        <div className={`text-white p-10 text-center relative overflow-hidden ${isPerfect ? 'bg-green-600' : 'bg-slate-800'}`}>
+                            <div className="relative z-10">
+                                <h2 className="text-3xl font-bold mb-2">Kết Quả Bài Làm</h2>
+                                <div className="text-6xl font-black mb-4 tracking-tighter">{total}<span className="text-3xl text-white/60 font-normal">/{max}</span></div>
+                                <p className="text-xl font-bold hand-font text-white">
+                                    {isPerfect ? "Xuất sắc! Thầy/Cô đã sẵn sàng tư vấn!" : "Cần ôn tập thêm để nắm vững thông tin."}
+                                </p>
+                            </div>
+                        </div>
+
+                        {aiComment && (
+                            <div className="p-6 bg-blue-50 border-b border-blue-100">
+                                <div className="flex items-start gap-3">
+                                    <div className="bg-blue-600 p-2 rounded-full shadow shrink-0">
+                                        <Icon name="bot" className="w-6 h-6 text-white" />
+                                    </div>
+                                    <div>
+                                        <h3 className="font-bold text-blue-900 mb-1">Góp ý từ AI:</h3>
+                                        <p className="text-blue-800 text-sm italic bg-white p-3 rounded-lg border border-blue-100 shadow-sm">{aiComment}</p>
+                                    </div>
+                                </div>
+                            </div>
+                        )}
+
+                        <div className="p-6 bg-gray-50 border-b max-h-60 overflow-y-auto">
+                            <h3 className="font-bold text-gray-700 mb-3">Chi tiết:</h3>
+                            <div className="grid grid-cols-5 gap-2 text-sm text-center">
+                                {details.map((status, i) => (
+                                    <div key={i} className={`p-2 rounded border ${status === "Đ" ? 'bg-green-100 border-green-300 text-green-700' : 'bg-red-100 border-red-300 text-red-700'}`}>
+                                        Câu {i+1}
+                                    </div>
+                                ))}
+                            </div>
+                        </div>
+
+                        <div className="p-8 text-center">
+                            {!isPerfect ? (
+                                <div>
+                                    <p className="text-red-500 mb-4 font-bold">Chưa đạt 100 điểm. Vui lòng làm lại!</p>
+                                    <button onClick={onRetry} className="bg-orange-600 text-white px-8 py-3 rounded-full font-bold shadow-lg hover:bg-orange-700 transition flex items-center gap-2 mx-auto">
+                                        <Icon name="rotate-ccw" className="w-5 h-5" /> Làm lại bài
+                                    </button>
+                                </div>
+                            ) : (
+                                <div className="text-green-600 font-bold flex items-center justify-center gap-2">
+                                    <Icon name="badge-check" className="w-8 h-8" /> Chúc mừng Thầy/Cô đã hoàn thành!
+                                </div>
+                            )}
+                        </div>
+                    </div>
+                </div>
+            );
+        };
+
+        const LoadingScreen = () => (
+            <div className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center z-50 animate-fade-in">
+                <div className="bg-white p-8 rounded-2xl shadow-2xl text-center max-w-sm mx-4">
+                    <div className="animate-spin rounded-full h-16 w-16 border-4 border-gray-200 border-t-orange-500 mx-auto mb-6"></div>
+                    <h2 className="text-2xl font-bold text-gray-800 mb-2">Đang chấm điểm...</h2>
+                    <p className="text-gray-500">Hệ thống đang ghi nhận kết quả và xin ý kiến AI.</p>
+                </div>
+            </div>
+        );
+
+        const App = () => {
+            const [view, setView] = useState('intro');
+            const [name, setName] = useState('');
+            const [result, setResult] = useState(null);
+            const [aiComment, setAiComment] = useState("");
+
+            const handleStart = (userName) => {
+                setName(userName);
+                setView('quiz');
+            };
+
+            const handleSubmit = async (answers) => {
+                setView('loading');
+                
+                // --- CHẤM ĐIỂM (100 điểm thang 20 câu -> 5 điểm/câu) ---
+                let correctCount = 0;
+                let details = [];
+                let headers = [];
+                let scoresArr = []; // Để gửi về sheet
+                
+                rawExamData.mcq.forEach((q, i) => {
+                    const isCorrect = answers[`mcq_${i}`] === q.ans;
+                    if(isCorrect) correctCount++;
+                    details.push(isCorrect ? "Đ" : "S");
+                    headers.push(`Câu ${i+1}`);
+                    scoresArr.push(isCorrect ? "Đúng" : "Sai");
+                });
+
+                const maxScore = 100;
+                const totalScore = correctCount * 5;
+
+                // --- LẤY NHẬN XÉT AI ---
+                let comment = "";
+                if(APPS_SCRIPT_URL !== "URL_WEB_APP_CUA_BAN") {
+                    try {
+                        const commentRes = await fetch(APPS_SCRIPT_URL, {
+                            method: 'POST',
+                            headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+                            body: JSON.stringify({
+                                action: "get_comment",
+                                score: totalScore,
+                                maxScore: maxScore,
+                                p1: correctCount, p2: 0, p3: 0, p4: 0 // p1 là số câu đúng
+                            })
+                        });
+                        const commentData = await commentRes.json();
+                        if(commentData && commentData.comment) comment = commentData.comment;
+                    } catch (e) { console.error("Comment Error", e); }
+                }
+                setAiComment(comment);
+
+                // --- GỬI VỀ SHEET ---
+                if(APPS_SCRIPT_URL !== "URL_WEB_APP_CUA_BAN") {
+                    try {
+                        await fetch(APPS_SCRIPT_URL, {
+                            method: 'POST',
+                            mode: 'no-cors',
+                            headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+                            body: JSON.stringify({
+                                action: "save_score",
+                                role: "Tập Huấn Địa Chất",
+                                evaluator: name,
+                                groupName: "GV/CB", 
+                                comment: comment,
+                                scores: [`${totalScore}/100`, ...scoresArr],
+                                headers: ["Điểm Số", ...headers]
+                            })
+                        });
+                    } catch(e) { console.error("Save Error", e); }
+                }
+
+                setResult({ total: totalScore, max: maxScore, details });
+                setView('result');
+            };
+
+            return (
+                <div className="min-h-screen pb-10">
+                      <div className="h-2 bg-gradient-to-r from-orange-400 via-amber-500 to-yellow-600 sticky top-0 z-30"></div>
+                      {view === 'intro' && <StartScreen onStart={handleStart} />}
+                      {view === 'quiz' && <QuizScreen onFinish={handleSubmit} />}
+                      {view === 'loading' && <LoadingScreen />}
+                      {view === 'result' && <ResultScreen result={result} aiComment={aiComment} onRetry={() => setView('quiz')} />}
+                </div>
+            );
+        };
+
+        const root = ReactDOM.createRoot(document.getElementById('root'));
+        root.render(<App />);
+    </script>
+</body>
+</html>
