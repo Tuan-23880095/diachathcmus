@@ -1,10 +1,49 @@
-<script type="text/babel">
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Kiểm Tra Tư Vấn Tuyển Sinh - Khoa Địa Chất 2026</title>
+    <!-- React & Babel -->
+    <script src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
+    <script src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
+    <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Lucide Icons -->
+    <script src="https://unpkg.com/lucide@latest"></script>
+    <!-- Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Patrick+Hand&family=Roboto:wght@300;400;500;700&display=swap" rel="stylesheet">
+
+    <style>
+        body { font-family: 'Roboto', sans-serif; background-color: #fff7ed; /* Màu kem/đất */ }
+        .hand-font { font-family: 'Patrick Hand', cursive; }
+        
+        /* Custom Scrollbar */
+        ::-webkit-scrollbar { width: 8px; }
+        ::-webkit-scrollbar-track { background: #f1f1f1; }
+        ::-webkit-scrollbar-thumb { background: #d97706; border-radius: 4px; } /* Màu cam đất */
+        ::-webkit-scrollbar-thumb:hover { background: #b45309; }
+
+        /* Animation */
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        .animate-fade-in { animation: fadeIn 0.4s ease-out forwards; }
+    </style>
+</head>
+<body>
+    <div id="root"></div>
+
+    <script type="text/babel">
         const { useState, useEffect, useRef } = React;
 
         // --- CẤU HÌNH ---
-        const APPS_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbxBPRlkjpMLDctdm2Uk7aYex_P6Cx0uhIdUmwOcYEm9C7JDe5OH92FiWEn6Nz1HNenY-A/exec"; 
+        // !!! QUAN TRỌNG: THAY URL WEB APP CỦA BẠN VÀO DÒNG DƯỚI NẾU CÓ ---
+        const APPS_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbxBPRlkjpMLDctdm2Uk7aYex_P6Cx0uhIdUmwOcYEm9C7JDe5OH92FiWEn6Nz1HNenY-A/exec'; 
 
-        // --- DỮ LIỆU ĐỀ THI GỐC ---
+        // --- DỮ LIỆU ĐỀ THI (CẬP NHẬT 2026) ---
         const rawExamData = {
             mcq: [
                 { q: "1. Trường ĐH KHTN áp dụng chính sách nào đối với Điểm ĐGNL và Điểm tốt nghiệp THPT?", options: ["Chỉ sử dụng Điểm tốt nghiệp THPT", "Áp dụng hoặc là Điểm ĐGNL hoặc Điểm tốt nghiệp THPT", "Cộng dồn hai loại điểm", "Chỉ sử dụng Điểm ĐGNL"], ans: 1 },
@@ -17,10 +56,12 @@
                 { q: "8. Từ khóa 'Tập trung' trong báo cáo ám chỉ điều gì?", options: ["Tập trung xem tivi", "Tập trung nguồn lực vào mũi nhọn tuyển sinh", "Tập trung đi du lịch", "Đóng cửa văn phòng"], ans: 1 },
                 { q: "9. Thí sinh sức khỏe yếu, say xe có học Địa chất được không?", options: ["Không sao đâu cứ học đi", "Cần cân nhắc kỹ, nhưng vẫn có hướng làm Lab/Văn phòng", "Tuyệt đối không", "Chuyển sang Toán tin"], ans: 1 },
                 { q: "10. Điểm mạnh thường được nhấn mạnh của Khoa Địa chất ĐH KHTN?", options: ["Cơ sở duy nhất miền Nam có bề dày lịch sử uy tín", "Học phí cao nhất", "Không cần Tiếng Anh", "Chỉ dạy lý thuyết"], ans: 0 },
-                { q: "11. Các khối thi (tổ hợp) phổ biến nhất vào ngành Địa chất?", options: ["C01 và D01", "A00 và B00", "H00 và V00", "Chỉ xét IELTS"], ans: 1 },
+                // --- CÂU 11 ĐÃ CẬP NHẬT ---
+                { q: "11. Theo phương án tuyển sinh 2026, các tổ hợp xét tuyển nào sau đây phản ánh đúng sự đa dạng và định hướng liên ngành của Khoa Địa chất?", options: ["Chỉ xét tuyển duy nhất khối A00 và B00", "Bao gồm A00, C01, D01, D10 (và các tổ hợp khác như A07, C02, C04)", "Chỉ xét tuyển các khối năng khiếu H00, V00", "Chỉ xét tuyển thẳng bằng IELTS"], ans: 1 },
+                // ---------------------------
                 { q: "12. Kỹ năng quan trọng nhất đối với tư vấn viên tuyển sinh?", options: ["Nói liên tục", "Lắng nghe tích cực và đặt câu hỏi", "Ép buộc nộp hồ sơ", "Chê bai trường khác"], ans: 1 },
                 { q: "13. Xử lý thế nào khi không chắc chắn câu trả lời về quy chế?", options: ["Đoán đại", "Xin lỗi, ghi nhận và phản hồi sau", "Lờ đi", "Nói câu hỏi không quan trọng"], ans: 1 },
-                { q: "14. Chuyên ngành 'Địa chất Thủy văn - Địa chất Công trình' giải quyết vấn đề gì?", options: ["Khoa học hành tinh", "Tìm nước ngầm và xử lý nền móng", "Lai tạo cây trồng", "Thiết kế phần mềm"], ans: 1 },
+                { q: "14. Chuyên ngành 'Địa chất Thủy văn - Địa chất Công trình' (thuộc nhóm Địa kỹ thuật) giải quyết vấn đề gì?", options: ["Khoa học hành tinh", "Tìm nước ngầm và xử lý nền móng", "Lai tạo cây trồng", "Thiết kế phần mềm"], ans: 1 },
                 { q: "15. Xem thông tin 'Đề án tuyển sinh' chính xác nhất ở đâu?", options: ["Facebook không chính thức", "Website trường và Cổng Bộ GD&ĐT", "Hỏi bạn bè", "Tự suy luận"], ans: 1 },
                 { q: "16. 'Ngành học Khoa học Trái đất' bao trùm lĩnh vực nào?", options: ["Chỉ Địa chất học", "Địa chất, Khí tượng, Hải dương...", "Địa lý kinh tế", "Lịch sử loài người"], ans: 1 },
                 { q: "17. Học Địa chất có cơ hội đi nước ngoài không?", options: ["Không bao giờ", "Rất nhiều: học bổng, hội thảo, tập đoàn đa quốc gia", "Chỉ đi khi bỏ nghề", "Chỉ đi du lịch tự túc"], ans: 1 },
@@ -33,12 +74,9 @@
         // --- HÀM TIỆN ÍCH: SHUFFLE (Xáo trộn mảng) ---
         const shuffleArray = (array) => {
             let currentIndex = array.length, randomIndex;
-            // While there remain elements to shuffle.
             while (currentIndex != 0) {
-                // Pick a remaining element.
                 randomIndex = Math.floor(Math.random() * currentIndex);
                 currentIndex--;
-                // And swap it with the current element.
                 [array[currentIndex], array[randomIndex]] = [array[randomIndex], array[currentIndex]];
             }
             return array;
@@ -69,7 +107,7 @@
                         <div className="bg-orange-100 w-24 h-24 rounded-full flex items-center justify-center mx-auto mb-6">
                             <Icon name="shuffle" className="w-12 h-12 text-orange-600" />
                         </div>
-                        <h1 className="text-3xl font-bold text-gray-800 mb-2 hand-font uppercase">Tập Huấn Tuyển Sinh</h1>
+                        <h1 className="text-3xl font-bold text-gray-800 mb-2 hand-font uppercase">Tập Huấn Tuyển Sinh 2026</h1>
                         <p className="text-orange-700 font-medium mb-8">Khoa Địa Chất - Trường ĐH KHTN</p>
                         
                         <div className="space-y-4 text-left">
@@ -174,7 +212,7 @@
                                 <h2 className="text-3xl font-bold mb-2">Kết Quả Bài Làm</h2>
                                 <div className="text-6xl font-black mb-4 tracking-tighter">{total}<span className="text-3xl text-white/60 font-normal">/{max}</span></div>
                                 <p className="text-xl font-bold hand-font text-white">
-                                    {isPerfect ? "Xuất sắc! Thầy/Cô đã sẵn sàng tư vấn!" : "Cần ôn tập thêm để nắm vững thông tin."}
+                                    {isPerfect ? "Xuất sắc! Thầy/Cô đã nắm vững thông tin tuyển sinh 2026!" : "Cần ôn tập lại các tổ hợp xét tuyển mới!"}
                                 </p>
                             </div>
                         </div>
@@ -228,7 +266,7 @@
                 <div className="bg-white p-8 rounded-2xl shadow-2xl text-center max-w-sm mx-4">
                     <div className="animate-spin rounded-full h-16 w-16 border-4 border-gray-200 border-t-orange-500 mx-auto mb-6"></div>
                     <h2 className="text-2xl font-bold text-gray-800 mb-2">Đang chấm điểm...</h2>
-                    <p className="text-gray-500">Hệ thống đang ghi nhận kết quả và xin ý kiến AI.</p>
+                    <p className="text-gray-500">Hệ thống đang ghi nhận kết quả...</p>
                 </div>
             </div>
         );
@@ -238,37 +276,26 @@
             const [name, setName] = useState('');
             const [result, setResult] = useState(null);
             const [aiComment, setAiComment] = useState("");
-            const [examQuestions, setExamQuestions] = useState([]); // State để lưu bộ câu hỏi đã xáo trộn
+            const [examQuestions, setExamQuestions] = useState([]);
 
             const handleStart = (userName) => {
                 setName(userName);
                 
                 // --- LOGIC XỬ LÝ DỮ LIỆU ĐỂ ĐẢO CÂU HỎI VÀ ĐÁP ÁN ---
-                // 1. Map qua từng câu để đảo thứ tự đáp án ABCD
                 const processedQuestions = rawExamData.mcq.map((q, index) => {
-                    // Lấy nội dung đáp án đúng hiện tại
                     const correctText = q.options[q.ans];
-                    
-                    // Tạo bản sao options và xáo trộn
                     const shuffledOptions = shuffleArray([...q.options]);
-                    
-                    // Tìm vị trí mới của đáp án đúng
                     const newAnsIndex = shuffledOptions.indexOf(correctText);
-                    
                     return {
                         ...q,
-                        originalIndex: index + 1, // Lưu lại số thứ tự gốc để tham chiếu nếu cần
-                        id: `mcq_shuffled_${index}`, // ID duy nhất
+                        originalIndex: index + 1,
+                        id: `mcq_shuffled_${index}`,
                         options: shuffledOptions,
-                        ans: newAnsIndex, // Cập nhật vị trí đúng mới
-                        type: 'mcq',
-                        section: 'Kiến Thức Tuyển Sinh'
+                        ans: newAnsIndex,
+                        type: 'mcq'
                     };
                 });
-
-                // 2. Xáo trộn thứ tự các câu hỏi
                 const finalQuestions = shuffleArray(processedQuestions);
-                
                 setExamQuestions(finalQuestions);
                 setView('quiz');
             };
@@ -276,19 +303,15 @@
             const handleSubmit = async (answers) => {
                 setView('loading');
                 
-                // --- CHẤM ĐIỂM (Dựa trên bộ câu hỏi đã xáo trộn) ---
                 let correctCount = 0;
                 let details = [];
                 let headers = [];
                 let scoresArr = [];
                 
-                // Duyệt qua mảng câu hỏi đã xáo trộn để chấm
                 examQuestions.forEach((q, i) => {
                     const isCorrect = answers[q.id] === q.ans;
                     if(isCorrect) correctCount++;
                     details.push(isCorrect ? "Đ" : "S");
-                    // Lưu ý: headers giờ sẽ theo thứ tự ngẫu nhiên, nếu muốn sort lại thì cần logic phức tạp hơn
-                    // Ở đây ta cứ ghi Câu 1, Câu 2 theo thứ tự xuất hiện trong bài làm của user
                     headers.push(`Câu ${i+1}`); 
                     scoresArr.push(isCorrect ? "Đúng" : "Sai");
                 });
@@ -296,10 +319,11 @@
                 const maxScore = 100;
                 const totalScore = correctCount * 5;
 
-                // --- LẤY NHẬN XÉT AI ---
+                // --- GỬI VỀ SHEET (NẾU CÓ URL) ---
                 let comment = "";
                 if(APPS_SCRIPT_URL !== "URL_WEB_APP_CUA_BAN") {
                     try {
+                        // 1. Lấy Comment
                         const commentRes = await fetch(APPS_SCRIPT_URL, {
                             method: 'POST',
                             headers: { 'Content-Type': 'text/plain;charset=utf-8' },
@@ -312,20 +336,16 @@
                         });
                         const commentData = await commentRes.json();
                         if(commentData && commentData.comment) comment = commentData.comment;
-                    } catch (e) { console.error("Comment Error", e); }
-                }
-                setAiComment(comment);
+                        setAiComment(comment);
 
-                // --- GỬI VỀ SHEET ---
-                if(APPS_SCRIPT_URL !== "URL_WEB_APP_CUA_BAN") {
-                    try {
+                        // 2. Lưu điểm
                         await fetch(APPS_SCRIPT_URL, {
                             method: 'POST',
                             mode: 'no-cors',
                             headers: { 'Content-Type': 'text/plain;charset=utf-8' },
                             body: JSON.stringify({
                                 action: "save_score",
-                                role: "Tập Huấn Địa Chất (Shuffle)",
+                                role: "Tập Huấn 2026",
                                 evaluator: name,
                                 groupName: "GV/CB", 
                                 comment: comment,
@@ -333,7 +353,7 @@
                                 headers: ["Điểm Số", ...headers]
                             })
                         });
-                    } catch(e) { console.error("Save Error", e); }
+                    } catch(e) { console.error("Error", e); }
                 }
 
                 setResult({ total: totalScore, max: maxScore, details });
@@ -354,3 +374,5 @@
         const root = ReactDOM.createRoot(document.getElementById('root'));
         root.render(<App />);
     </script>
+</body>
+</html>
